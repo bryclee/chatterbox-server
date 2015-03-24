@@ -23,10 +23,12 @@ var ip = "127.0.0.1";
 //     console.log(data);
 //   });
 // })
-fs.readFile('./classes/chatterbox/messages.txt', {encoding: 'utf8'}, function(err, data) {
-  console.log(data);
-})
 
+/*  For File Reading 
+fs.readFile('./classes/chatterbox/messages.txt', {encoding: 'utf8'}, function(err, data) {
+    console.log(data);
+})
+*/
 
 // We use node's http module to create a server.
 //

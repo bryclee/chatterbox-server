@@ -11,50 +11,69 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
-window.messagesData = [];
+var url = require('url');
+global.messagesData = []; // try exports later
 
 exports.requestHandler = function(request, response) {
 
   var statusCode;
-  fs.readFile('./classes/chatterbox/messages.txt', {encoding: 'utf8'}, function(err, data) {
-    console.log(data);
-  })
-  if ( request.method === 'POST' ) {
-    request.resume();
-    // Request and Response come from node's http module.
-    //
-    // They include information about both the incoming request, such as
-    // headers and URL, and about the outgoing response, such as its status
-    // and content.
-    //
-    // Documentation for both request and response can be found in the HTTP section at
-    // http://nodejs.org/documentation/api/
+  
+  // Request and Response come from node's http module.
+  //
+  // They include information about both the incoming request, such as
+  // headers and URL, and about the outgoing response, such as its status
+  // and content.
+  //
+  // Documentation for both request and response can be found in the HTTP section at
+  // http://nodejs.org/documentation/api/
 
-    var body = '';
-
-    request.on('data', function (chunk) {
-      body += chunk;
-    });
-
-
-    request.on('end', function() {
-      try {
-        var data = JSON.parse(body);
-      } catch (er) {
-        console.log(er)
-      }
-    });
-
-    statusCode = 201;
-  } else {
-    statusCode = 200;
-  }
   // Do some basic logging.
   //
   // Adding more logging to your server can be an easy way to get passive
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
   console.log("Serving request type " + request.method + " for url " + request.url);
+  
+  if ( request.method === 'POST' ) {
+    console.log('post');
+    var body = '';
+    statusCode = 201;
+
+    request.on('data', function (chunk) {
+      body += chunk;
+      console.log('chunk received');
+    });
+
+    request.on('end', function() {
+      try {
+        global.messagesData.push(JSON.parse(body));
+        writeResponse(response, 201);
+      } catch (er) {
+        console.log(er);
+      }
+    });
+  } else if ( request.method === 'GET' ) {
+    console.log('get');
+    var obj = {};
+    var query = url.parse(request.url, true);
+    console.log(query);
+    var result = global.messagesData.slice();
+    statusCode = 200;
+
+    if (query.order === '-createdAt') {
+      obj['results'] = result.reverse();
+    } else {
+      obj['results'] = result;
+    }
+    writeResponse(response, statusCode, obj);
+  } else if ( request.method === 'OPTIONS' ) {
+    console.log('options');
+    statusCode = 200;
+    writeResponse(response, statusCode);
+  }
+}
+
+var writeResponse = function(response, statusCode, data) {
 
   // The outgoing status.
 
@@ -65,7 +84,11 @@ exports.requestHandler = function(request, response) {
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = "text/plain";
+  if (data) {
+    headers['Content-Type'] = "application/json";
+  } else {
+    headers['Content-Type'] = "text/plain";
+  }
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
@@ -78,7 +101,9 @@ exports.requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end(JSON.stringify());
+  console.log('response end', statusCode);
+  console.log(data);
+  response.end(JSON.stringify(data));
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
