@@ -1,6 +1,8 @@
 /* Import node's http module: */
+var fs =  require('fs');
 var http = require("http");
-
+var url = require('url');
+var handleRequest = require('./request-handler.js').requestHandler;
 
 // Every server needs to listen on a port with a unique number. The
 // standard port for HTTP servers is port 80, but that port is
@@ -14,6 +16,16 @@ var port = 3000;
 // special address that always refers to localhost.
 var ip = "127.0.0.1";
 
+// fs.open('./classes/chatterbox/messages.txt', 'a+', function(err, fd) {
+//   //fs.write(fd, 'hello world\ntestline', function (err, data) {})
+//   var data = [];
+//   fs.read(fd, data, 0,  function(err, data) {
+//     console.log(data);
+//   });
+// })
+fs.readFile('./classes/chatterbox/messages.txt', {encoding: 'utf8'}, function(err, data) {
+  console.log(data);
+})
 
 
 // We use node's http module to create a server.
@@ -26,16 +38,5 @@ var server = http.createServer(handleRequest);
 console.log("Listening on http://" + ip + ":" + port);
 server.listen(port, ip);
 
-// To start this server, run:
-//
-//   node basic-server.js
-//
-// on the command line.
-//
-// To connect to the server, load http://127.0.0.1:3000 in your web
-// browser.
-//
-// server.listen() will continue running as long as there is the
-// possibility of serving more requests. To stop your server, hit
-// Ctrl-C on the command line.
+
 

@@ -11,17 +11,44 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
+window.messagesData = [];
 
-var requestHandler = function(request, response) {
-  // Request and Response come from node's http module.
-  //
-  // They include information about both the incoming request, such as
-  // headers and URL, and about the outgoing response, such as its status
-  // and content.
-  //
-  // Documentation for both request and response can be found in the HTTP section at
-  // http://nodejs.org/documentation/api/
+exports.requestHandler = function(request, response) {
 
+  var statusCode;
+  fs.readFile('./classes/chatterbox/messages.txt', {encoding: 'utf8'}, function(err, data) {
+    console.log(data);
+  })
+  if ( request.method === 'POST' ) {
+    request.resume();
+    // Request and Response come from node's http module.
+    //
+    // They include information about both the incoming request, such as
+    // headers and URL, and about the outgoing response, such as its status
+    // and content.
+    //
+    // Documentation for both request and response can be found in the HTTP section at
+    // http://nodejs.org/documentation/api/
+
+    var body = '';
+
+    request.on('data', function (chunk) {
+      body += chunk;
+    });
+
+
+    request.on('end', function() {
+      try {
+        var data = JSON.parse(body);
+      } catch (er) {
+        console.log(er)
+      }
+    });
+
+    statusCode = 201;
+  } else {
+    statusCode = 200;
+  }
   // Do some basic logging.
   //
   // Adding more logging to your server can be an easy way to get passive
@@ -30,7 +57,6 @@ var requestHandler = function(request, response) {
   console.log("Serving request type " + request.method + " for url " + request.url);
 
   // The outgoing status.
-  var statusCode = 200;
 
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
@@ -52,7 +78,7 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end("Hello, World!");
+  response.end(JSON.stringify());
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
