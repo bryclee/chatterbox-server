@@ -9,17 +9,17 @@ var port = 3000;
 var ip = "127.0.0.1";
 
 var routes = {
-  '/classes/messages': handleRequest
+  '/classes/messages': handleRequest,
+  '/classes/room1' : handleRequest
 };
 
 var server = http.createServer(function(request, response) {
   var path = url.parse(request.url).pathname;
-  console.log('path: ', path);
   var route = routes[path];
   if (route) {
     handleRequest(request, response);
   } else {
-    utils.writeResponse(response, 404);
+    utils.writeResponse(response, 404, 'Bad request');
   }
 
 });
